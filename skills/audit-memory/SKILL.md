@@ -17,6 +17,8 @@ From the repo root (`git rev-parse --show-toplevel`), list what exists:
 
 Skip `node_modules`, vendored and generated folders. If none exist, say so in one line and stop.
 
+A file that is a symlink to another (`git ls-files -s` shows mode `120000`, or `ls -l` shows `->`) is one file under two names: audit it once, and never report it as a duplicate.
+
 ## 2. Split each file into claims
 
 A claim is one statement an agent would act on: a path, a command, a tool or version, a convention, a "never/always", an architecture fact. Skip headings, greetings and pure opinion. Keep each claim's `file:line`.
