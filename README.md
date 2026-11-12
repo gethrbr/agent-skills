@@ -48,6 +48,10 @@ npx skills add gethrbr/agent-skills
 claude plugin marketplace add gethrbr/agent-skills && claude plugin install agent-skills@gethrbr
 ```
 
+### Is it safe to install?
+
+A skill runs with your agent's permissions, so read it first: `audit-memory` is one Markdown file, [skills/audit-memory/SKILL.md](skills/audit-memory/SKILL.md), with no scripts, binaries or install hooks. Every change to this repo goes through a reviewed pull request, and release tags cannot be moved once published. See [SECURITY.md](SECURITY.md).
+
 ## Use
 
 In your agent, in the repo:
