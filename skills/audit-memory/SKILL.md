@@ -37,6 +37,14 @@ Use only reading commands: `ls`, `git ls-files`, `git log`, `grep`/`rg`, reading
 
 A claim you cannot check from the repo is "not checkable": leave it out of the findings and count it.
 
+Before you report a finding, try to prove yourself wrong. The usual false alarms:
+
+- **Resolution.** A path or package that "isn't there" may resolve anyway: hoisted dependencies (`nodeLinker: hoisted`, `shamefully-hoist`, npm and yarn workspaces), path aliases in `tsconfig.json`, re-exports, generated files that a build creates.
+- **Behaviour.** Many tools act differently when no one is at the keyboard: test runners skip watch mode outside a terminal, CLIs skip prompts in CI. Do not report "this command never exits" unless it is true for an agent too.
+- **Scope.** A rule may only be meant for one package or for new code. "Not followed" needs the code to break it where the rule applies, and the report should name where.
+
+If a finding survives that, report it. If you are unsure, leave it out.
+
 Sort each finding into one bucket:
 
 - **Wrong**: names something that does not exist (dead path, missing script, removed package).
