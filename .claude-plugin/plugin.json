@@ -1,7 +1,7 @@
 {
   "name": "agent-skills",
   "displayName": "Harbor agent skills",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Free skills for coding agents: audit CLAUDE.md, AGENTS.md and Cursor rules against the code, check your diff against them, and turn repeated PR review comments into rules.",
   "author": {
     "name": "Harbor",
