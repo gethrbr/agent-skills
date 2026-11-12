@@ -1,0 +1,11 @@
+{
+  "name": "agent-skills",
+  "displayName": "Harbor agent skills",
+  "version": "0.1.0",
+  "description": "Free skills for coding agents: audit CLAUDE.md, AGENTS.md, Cursor rules and memory files against the code.",
+  "author": { "name": "Harbor", "url": "https://gethrbr.com" },
+  "homepage": "https://github.com/gethrbr/agent-skills",
+  "repository": "https://github.com/gethrbr/agent-skills",
+  "license": "MIT",
+  "keywords": ["claude-md", "agents-md", "cursor-rules", "memory", "audit"]
+}

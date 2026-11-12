@@ -1,0 +1,15 @@
+{
+  "name": "gethrbr",
+  "description": "Free skills for coding agents from Harbor",
+  "owner": {
+    "name": "Harbor",
+    "url": "https://gethrbr.com"
+  },
+  "plugins": [
+    {
+      "name": "agent-skills",
+      "source": "./",
+      "description": "Free skills for coding agents: audit CLAUDE.md, AGENTS.md, Cursor rules and memory files against the code."
+    }
+  ]
+}
