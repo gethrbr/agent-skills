@@ -9,7 +9,7 @@
     {
       "name": "agent-skills",
       "source": "./",
-      "description": "Free skills for coding agents: audit CLAUDE.md, AGENTS.md, Cursor rules and memory files against the code."
+      "description": "Free skills for coding agents: audit CLAUDE.md, AGENTS.md and Cursor rules against the code, and check your diff against them."
     }
   ]
 }
