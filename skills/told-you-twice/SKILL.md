@@ -16,7 +16,6 @@ By default read the sessions for **this repo only**. If the user says "all", "ev
 
 ```sh
 SLUG=$(printf %s "$ROOT" | sed 's/[^A-Za-z0-9]/-/g')
-ls -dt ~/.claude/projects/"$SLUG"* 2>/dev/null
 ```
 
 **Codex** keeps sessions in `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`; the first line (`"type":"session_meta"`) holds the `cwd`. Find this repo's: `grep -l "\"cwd\":\"$ROOT" -r ~/.codex/sessions --include='*.jsonl'`.
@@ -26,11 +25,14 @@ If neither has sessions, say so in one line (and that Cursor's chat history is n
 Logs get big (gigabytes on a busy repo). Take the **newest 150 session files across both tools**, unless the user asks for more or a date range:
 
 ```sh
-{ ls ~/.claude/projects/"$SLUG"*/*.jsonl 2>/dev/null; grep -l "\"cwd\":\"$ROOT" -r ~/.codex/sessions --include='*.jsonl' 2>/dev/null; } | tr '\n' '\0' \
+{ find ~/.claude/projects -mindepth 2 -maxdepth 2 -name '*.jsonl' -path "$HOME/.claude/projects/$SLUG*";
+  grep -l "\"cwd\":\"$ROOT" -r ~/.codex/sessions --include='*.jsonl' 2>/dev/null; } \
+  | while IFS= read -r f; do c=$(grep -m1 -o '"cwd":"[^"]*"' "$f" | cut -d'"' -f4); case "$c" in "$ROOT"|"$ROOT"/*) echo "$f";; esac; done \
+  | tr '\n' '\0' \
   | xargs -0 sh -c 'stat -f "%m %N" "$@" 2>/dev/null || stat -c "%Y %n" "$@"' _ | sort -rn | head -150 | cut -d' ' -f2- > "$T/files.txt"
 ```
 
-Expect many folders on a busy repo (worktrees, scratch runs). Say how many sessions and which date range you read.
+The `while` loop keeps only sessions whose working folder is the repo or inside it: folder names alone also match a sibling repo whose name starts the same (`app` and `app-web`). For all projects, drop the `-path` test and the loop, and list every Codex session: `find ~/.codex/sessions -name '*.jsonl'`. Use `find` as written, never a shell glob like `~/.claude/projects/*/*.jsonl`: with thousands of sessions the glob fails with "argument list too long", and some shells hide that error. Check the list holds the tools you expect (`grep -c '/.claude/' "$T/files.txt"` and `grep -c '/.codex/'`) before going on. Expect many folders on a busy repo (worktrees, scratch runs). Say how many sessions and which date range you read.
 
 ## 2. Pull out only what the person typed
 
@@ -68,9 +70,9 @@ grep -h '"role":"user"' "$f" | jq -r --arg s "$(basename "$f" .jsonl | tail -c 9
 
 Run these over every file in `$T/files.txt`. The columns are a short session id, the date, and the message. Messages over 700 characters are task briefs, not corrections, so they are dropped. `INTERRUPTED` marks where the person stopped the agent mid-action: the message right after it in the same session is very often a correction.
 
-Scripted runs (benchmarks, scheduled prompts) look human in the logs. Drop a message that appears word for word in 3 or more sessions and reads like a script (`cut -f1,3 "$T/msgs.tsv" | sort -u | cut -f2 | sort | uniq -c | sort -rn | head`), and say how many you dropped.
+Scripted runs (benchmarks, test probes, scheduled prompts) look human in the logs. Drop a session whose messages read like a script ("Reply with exactly...", "Run exactly this one command", the same long prompt in other sessions), and say how many you dropped. To spot repeats, ignore short messages like "continue" or "ok": `awk -F'\t' 'length($3) > 40' "$T/msgs.tsv" | cut -f1,3 | LC_ALL=C sort -u | cut -f2 | LC_ALL=C sort | uniq -c | sort -rn | head`. Use `LC_ALL=C` with `sort` whenever messages may hold non-English text.
 
-Count lines and sessions (`wc -l`, `cut -f1 | sort -u | wc -l`). If there are more than 1,500 messages and they are mostly English, read the likely corrections first (the pattern below is English only; for other languages, read everything):
+Count lines and sessions that have at least one message (`wc -l`, `cut -f1 | sort -u | wc -l`): report that session count, not the number of files read. If there are more than 1,500 messages and they are mostly English, read the likely corrections first (the pattern below is English only; for other languages, read everything):
 
 ```sh
 grep -n -iE '(^|[^a-z])(no|nope|don.?t|dont|do not|stop|never|always|again|told you|i said|wrong|not what|why did|instead|revert|undo|didn.?t ask|you forgot|still|should have)([^a-z]|$)' "$T/msgs.tsv" > "$T/cand.tsv"
@@ -93,7 +95,9 @@ Then try to prove each one wrong before you keep it. The usual false alarms: the
 
 Read the rules the agent already gets: `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.cursor/rules/`, `.cursorrules`, `.claude/rules/`, `.github/copilot-instructions.md` (root and the folders involved), the user's `~/.claude/CLAUDE.md`, and Claude Code's memory folder for the repo (`~/.claude/projects/$SLUG/memory/`).
 
-- **Not written**: nothing says it. Draft the rule and pick the file: the repo's `AGENTS.md` or `CLAUDE.md` for a repo habit, the user's own `~/.claude/CLAUDE.md` for a personal preference that holds in every repo.
+In "all projects" mode, also read the rules and memory files of every project a repeat came from.
+
+- **Not written**: nothing says it. Draft the rule and pick the file: the repo's `AGENTS.md` or `CLAUDE.md` for a repo habit, the user's own `~/.claude/CLAUDE.md` for a preference that holds in every repo or came up in more than one project. A rule written in one repo's memory does not reach the others: say so when that is why it was repeated.
 To search the memory folder, `grep -ril` it for the rule's key words; do not rely on the index file alone. Date a line with `git log -1 --format=%as -S '<phrase>' -- <file>` for files in the repo and the file's modified date for the rest.
 
 - **In conflict**: a file says the opposite. Quote both and suggest how to split or settle the rule.

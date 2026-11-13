@@ -18,9 +18,9 @@ From the repo root (`ROOT=$(git rev-parse --show-toplevel)`) and the folder the 
 - `AGENTS.md`: Claude Code reads it **only when there is no `CLAUDE.md` or `CLAUDE.local.md`** in the working folder or above, or when a `CLAUDE.md` imports it with `@AGENTS.md`. If both exist and nothing imports `AGENTS.md`, Claude Code never sees it: report that as a finding, since the team likely thinks every agent reads it
 - the organization's managed file, if present (macOS `/Library/Application Support/ClaudeCode/CLAUDE.md`, Linux `/etc/claude-code/CLAUDE.md`)
 - `.claude/rules/**/*.md` without a `paths:` field in their front matter (with `paths:` they load on demand)
-- every file pulled in by an `@path` line in any of the above, following imports up to 4 levels deep
+- every file pulled in by an `@path` in any of the above, also mid-sentence ("use the @tailwind.config.ts colors" imports the whole file), following imports up to 4 levels deep. An `@path` to a folder imports nothing. An import inside an on-demand file loads on demand with it, and can still be the biggest item in the report: list it
 - auto memory: `~/.claude/projects/<repo path with every non-letter-or-digit as ->/memory/MEMORY.md`, first 200 lines or 25 KB, whichever comes first
-- skills: each skill's `name` and `description` load every session; measure the front matter only. Count only folders that hold a `SKILL.md` in `~/.claude/skills/` and `.claude/skills/` (other loose files there do not load). For plugins, **never glob `~/.claude/plugins/cache/`**: it keeps old versions and temp clones and overcounts many times over. Read `~/.claude/plugins/installed_plugins.json` for each plugin's `installPath` (only entries with `scope` `user`, or `project` with this repo's path), keep the plugins that are on in `enabledPlugins` (`~/.claude/settings.json`, then `.claude/settings.json`, then `.claude/settings.local.json`; the later file wins), and measure `<installPath>/skills/*/SKILL.md`. A plugin enabled from two marketplaces loads twice: report it
+- skills: each skill's `name` and `description` load every session; measure the front matter only. Find them with `find ~/.claude/skills .claude/skills -name SKILL.md` (synced skills sit one level deeper; other loose files there do not load). Leave out skills with `disable-model-invocation: true` in their front matter and skills turned off in `skillOverrides` in the settings files: they cost nothing. For plugins, **never glob `~/.claude/plugins/cache/`**: it keeps old versions and temp clones and overcounts many times over. Read `~/.claude/plugins/installed_plugins.json` for each plugin's `installPath` (only entries with `scope` `user`, or `project` with a `projectPath` at or below this repo), keep the plugins that are on in `enabledPlugins` (`~/.claude/settings.json`, then `.claude/settings.json`, then `.claude/settings.local.json`; the later file wins), and measure `<installPath>/skills/*/SKILL.md`, or the folder its `.claude-plugin/plugin.json` names under `skills`. A plugin also lists its subagents (`<installPath>/agents/*.md`, front matter only) in every session: count them on their own row. A plugin enabled from two marketplaces is worth cleaning up, but count it once
 - MCP servers: list them from `.mcp.json`, `~/.claude.json` (`mcpServers`, global and under this project's path) and enabled plugins; read server names only, never print their env or headers. Connectors added in claude.ai are not on disk. You cannot measure tool definitions from disk, and when tool search is on (tools listed by name only, loaded when used) they cost far less. Count what you can see in your own tool list and mark it as an estimate
 
 **Codex**
@@ -29,6 +29,8 @@ From the repo root (`ROOT=$(git rev-parse --show-toplevel)`) and the folder the 
 
 **Cursor**
 - `.cursor/rules/**/*.mdc` with `alwaysApply: true`, `.cursorrules`, root `AGENTS.md`
+
+Not measurable from disk, so name them without numbers: text that hooks add at session start or on every prompt, and connectors added in claude.ai.
 
 Report only the agents this repo shows signs of (their files exist), plus the user's own files for the agent you are running in.
 
