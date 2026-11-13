@@ -8,12 +8,12 @@ Give this repo's agent rules one score out of 100 on a fixed rubric, so two runs
 
 ## 1. Collect the files
 
-From the repo root (`git rev-parse --show-toplevel`): `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md` (root and subfolders, from `git ls-files`), `.claude/rules/**/*.md`, `.cursorrules`, `.cursor/rules/**/*.mdc`, `.windsurfrules`, and files these import with an `@path` line. Skip `node_modules`, vendored and generated folders. A symlink to another rules file is one file. Files the rules only link to (a markdown link to a skill, a doc or `CONTRIBUTING.md`) are not loaded by the agent: do not score them as rules.
+From the repo root (`git rev-parse --show-toplevel`): `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md` (root and subfolders, from `git ls-files`), `.claude/rules/**/*.md`, `.cursorrules`, `.cursor/rules/**/*.mdc`, `.windsurfrules`, `.github/instructions/*.instructions.md`, and files these import with `@path` (anywhere in a line, even mid-sentence, as Claude Code reads it). Skip `node_modules`, vendored and generated folders, and templates or fixtures that are copied into other projects or tests. A symlink to another rules file is one file. Files the rules only link to (a markdown link to a skill, a doc or `CONTRIBUTING.md`) are not loaded by the agent: do not score them as rules.
 
 Sort them into two groups, because the rubric treats them differently:
 
-- **Always loaded**: the root `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`, files they import with `@path`, `.claude/rules/` files with no `paths:` field in their front matter, `.cursor/rules/` files with `alwaysApply: true`, `.cursorrules`, `.windsurfrules`.
-- **Scoped**: rules files in subfolders, `.claude/rules/` files with `paths:`, Cursor rules with `globs:` and no `alwaysApply: true`.
+- **Always loaded**: the root `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md`, files they import with `@path`, `.claude/rules/` files with no `paths:` field in their front matter, `.cursor/rules/` files with `alwaysApply: true`, `.cursorrules`, `.windsurfrules`, `.github/instructions/` files with `applyTo: "**"`.
+- **Scoped**: rules files in subfolders, `.claude/rules/` files with `paths:`, Cursor rules without `alwaysApply: true` (with or without `globs:`), `.github/instructions/` files with a narrower `applyTo`.
 
 A folder reached through two symlinks (say `.claude/rules` and `.cursor/rules` both pointing at `agents/rules`) is one set of files. Count each real file once.
 
@@ -33,12 +33,12 @@ grep -HnoE '`[A-Za-z0-9_.@/-]+/[A-Za-z0-9_.@/*-]*`' <every rules file> | tr -d '
 
 Then look at each hit: drop placeholders and examples (`path/to/file.ts`, `src/foo/`), paths relative to a folder the line names, and paths a build generates. Package names (`@scope/pkg`) are skipped by the command: check those against the workspace's `package.json` names instead. What remains is wrong. Check branch names the same way: list every `main`, `master`, `develop`, `dev`, `staging`, `trunk` or `release` the rules mention as a branch (`grep -nwE 'main|master|develop|dev|staging|trunk|release'`, then read each hit), and compare with `git branch -a`: a branch the repo does not have is wrong. A line that compares, diffs, merges or branches against one ("diff against main", "between main and your changes", "branch from develop") names a branch, even in plain prose; "main context" or "the main thing" does not. Then check commands, scripts, tools and versions by reading `package.json` and other manifests, lockfiles and configs. Reading commands only. Start at 40, then:
 
-- minus 8 for each **wrong** claim (names a path, script, package, branch or env var that does not exist)
+- minus 8 for each **wrong** claim: names a path, script, package, branch, env var, task, function or test filter that does not exist, even if it was moved or renamed. Each distinct name is one claim
 - minus 5 for each **conflict** (two lines, in one file or two, say opposite things)
-- minus 4 for each **out of date** claim (the repo moved to another tool, version or layout)
-- minus 5 once if the repo has both `AGENTS.md` and a `CLAUDE.md` that does not import it (`@AGENTS.md`): Claude Code then never reads `AGENTS.md`. With `AGENTS.md` alone there is no deduction: Claude Code reads it when no `CLAUDE.md` exists, and so do Codex and Cursor
+- minus 4 for each **out of date** claim: what it names still exists, but the repo no longer works that way (an old version number, a tool that was replaced)
+- minus 5 once if the repo root has both `AGENTS.md` and a `CLAUDE.md` (not a symlink to it) that does not import it (`@AGENTS.md`): Claude Code then never reads `AGENTS.md`. With `AGENTS.md` alone there is no deduction: Claude Code reads it when no `CLAUDE.md` exists, and so do Codex and Cursor
 
-**One fact, one deduction**: the same dead path repeated in three files is one wrong claim (list every place it appears under the one finding). Before you take points, try to prove yourself wrong: hoisted packages, `tsconfig` path aliases, files a build generates, a rule scoped to one folder. Unsure means no deduction. Floor at 0.
+**One fact, one deduction**: the same dead path repeated in three files is one wrong claim (list every place it appears under the one finding). Before you take points, try to prove yourself wrong: hoisted packages, `tsconfig` path aliases, files a build generates, a rule scoped to one folder. A token the line marks as an example ("e.g.", "for example", `path/to/...`) is not a claim; a command, path or filter the agent is told to use is. A line that is plainly a trap for agents (asking them to tag their PRs, say) is not scored. Unsure means no deduction. Floor at 0.
 
 **Essentials (25).** 5 points each when an always-loaded file says it **and** it is correct. All or nothing: "run the tests" with no way to run one file gets 0 for item 3. A markdown link to another file, the README or `CONTRIBUTING.md` does not count: the agent does not load them, which is exactly why the line belongs in an always-loaded file (or behind an `@path` import). Name where the answer lives so the fix is one copy:
 
@@ -50,7 +50,7 @@ Then look at each hit: drop placeholders and examples (`path/to/file.ts`, `src/f
 
 A repo with nothing to build (docs only, a single script) gets the build points free; say so.
 
-**Specific (15).** In the always-loaded files, list the bullets and lines that tell the agent to do or not do something (skip headings, prose, folder maps, tech stack lists and code samples; one bullet is one line, however many sentences). If there are more than 40, take the 1st, 4th, 7th and so on. A line is specific when it names a file, folder, command, tool, function, or an agent feature by its name (plan mode, subagents, a named skill), or gives a do or don't someone could check afterwards ("keep PRs under 10 files"): "Put API routes in `src/server/routes/`" yes, "Write clean, maintainable code" no. Score = 15 × specific lines ÷ lines checked, rounded.
+**Specific (15).** In the always-loaded files, list the bullets, numbered steps and sub-bullets that tell the agent to do or not do something (skip headings, paragraphs, tables, folder maps, tech stack lists, command lists and code samples; one bullet is one line, however many sentences). Go through the files in this order: `CLAUDE.md`, `AGENTS.md`, then the rest by path. If there are more than 40, take the 1st, 4th, 7th and so on. A line is specific when it names a file, folder, command, tool, function, or an agent feature by its name (plan mode, subagents, a named skill), or gives a do or don't someone could check afterwards ("keep PRs under 10 files"): "Put API routes in `src/server/routes/`" yes, "Write clean, maintainable code" no. Score = 15 × specific lines ÷ lines checked, rounded.
 
 **Lean (10).** Add up the bytes of the always-loaded files (`wc -c`), divide by 4 for tokens:
 
@@ -62,7 +62,7 @@ A repo with nothing to build (docs only, a single script) gets the build points 
 | up to 15,000 | 2 |
 | more | 0 |
 
-**No noise (10).** In the always-loaded files, minus 2 for each distinct rule that adds nothing an agent can use: restates what a formatter or linter in the repo already enforces (check `prettier`, `eslint`, `biome`, `oxlint`, `ruff`, `rustfmt`, `.editorconfig`), generic advice any agent already follows ("write clean code", "use early returns"), or a rule stated more than once (one deduction per rule, however many copies). Floor at 0.
+**No noise (10).** In the always-loaded files, minus 2 for each distinct rule that adds nothing an agent can use: restates what a formatter or linter in the repo already enforces (check `prettier`, `eslint`, `biome`, `oxlint`, `ruff`, `rustfmt`, `.editorconfig`), generic advice any agent already follows ("write clean code", "use early returns"), or a rule stated more than once in what one agent loads (one deduction per rule, however many copies). A rule a linter enforces only in part is not noise. Floor at 0.
 
 Total out of 100. Grade: 90 and up A, 80 B, 70 C, 60 D, below 60 F.
 
