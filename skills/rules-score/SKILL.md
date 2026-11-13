@@ -99,7 +99,7 @@ Badge color by score: 90 to 100 `brightgreen`, 80 to 89 `green`, 70 to 79 `yello
 
 Then, if they want to share it, a line: `Our agent rules scored 74/100. 3 small changes take it to 91. github.com/gethrbr/deckhand`, using the score after the fixes you listed.
 
-Then offer a picture to post with it: `Want it as an image for X or LinkedIn?` On yes, copy `card.html` from this skill's folder to a temp folder (`T=$(mktemp -d)`), fill in the score, grade, each part's points and bar width, and the fixes line (the comment at the top of `card.html` names every `{{...}}` and how to fill it; leave none). Keep `$T` in one shell command with the render, or write the path out, and render it to a PNG:
+Then offer a picture to post with it: `Want it as an image for X or LinkedIn?` On yes, write the HTML template from `card.md` in this skill's folder to a temp folder (`T=$(mktemp -d)`, then, run from the skill's folder, `awk '/^<!doctype html>$/,/<\/html>$/' card.md > "$T/card.html"`), fill in the score, grade, each part's points and bar width, and the fixes line (the comment at the top of the template names every `{{...}}` and how to fill it; leave none). Keep `$T` in one shell command with the render, or write the path out, and render it to a PNG:
 
 ```sh
 C="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; command -v google-chrome >/dev/null && C=google-chrome

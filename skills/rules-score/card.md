@@ -1,7 +1,12 @@
+# rules-score share card
+
+The HTML template for the share image. The skill writes the block below to a temp folder as `card.html` and renders it with headless Chrome. It is kept in Markdown so the plugin ships only text files.
+
+```html
 <!doctype html>
-<!-- told-you-twice share card, 1080x1080. Fill every {{...}}, keep 3 to 5 .row blocks (top repeats, most sessions first), delete the rest. If none is unwritten, delete the .sum line.
-     Rule titles only, never the person's own words; no repo, company or path. No scripts, no web fonts: nothing here loads from the network. -->
-<html><head><meta charset="utf-8"><title>told-you-twice</title>
+<!-- rules-score share card, 1080x1080. Fill every {{...}}: each part's points, its max, and PCT_x = points / max * 100 (bar width).
+     FIXES is "1 fix" or "3 fixes", TAKE is "takes" or "take" to match, AFTER the score after them. If no fix raises the score, delete the .sum line. No scripts, no web fonts: nothing here loads from the network. -->
+<html><head><meta charset="utf-8"><title>rules-score</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:1080px;height:1080px;overflow:hidden}
@@ -21,28 +26,31 @@
   .bar{height:40px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.07)}
   .bar i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.18)}
   .cmd{padding:26px 36px 0;font-size:22px;color:#8C857D}.cmd b{color:#6FD8C6}.rows{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;padding:10px 36px 0}.sum{margin:0 36px 30px;padding-top:22px;border-top:1px solid rgba(255,255,255,.09);font-size:22px;color:#8C857D}.sum b{color:#6FD8C6}
-  .row{display:grid;grid-template-columns:40px 1fr auto;gap:18px;align-items:baseline;font-size:27px;line-height:1.25}
+  .row{display:grid;grid-template-columns:200px 1fr 130px;gap:18px;align-items:baseline;font-size:27px;line-height:1.25}
   .row .n{color:#6FD8C6;font-weight:700}
   .row .r{color:#fff;font-family:"Instrument Sans",-apple-system,"Segoe UI",system-ui,sans-serif;font-weight:600;font-size:28px;letter-spacing:-.01em}
   .row .c{color:#8C857D;font-size:21px;white-space:nowrap;text-align:right}
   .row .c b{color:#FF8A5C;font-size:25px}
   .foot{position:absolute;left:72px;right:72px;bottom:50px;display:flex;justify-content:space-between;font-size:17px;color:#5E6B6E;letter-spacing:.02em}
+  .row .p{color:#fff;font-weight:600}.track{height:14px;border-radius:7px;background:rgba(255,255,255,.08);align-self:center}.fill{height:100%;border-radius:7px;background:#6FD8C6}.row .s{color:#fff;text-align:right;font-size:25px}.row .s i{color:#8C857D;font-style:normal}
 </style></head><body>
 <div class="guide" style="left:48px"></div><div class="guide" style="right:48px"></div>
-<div class="chip mono">told-you-twice, on my own agent history</div>
-<h1><span class="soft">I told my agent the same {{REPEATS}} things</span><br>across {{SESSIONS}} sessions.</h1>
+<div class="chip mono">rules-score, on our agent rules</div>
+<h1><span class="soft">Our agent rules scored</span><br>{{SCORE}}/100 ({{GRADE}}).</h1>
 <div class="panel">
   <div class="term mono">
     <div class="bar"><i></i><i></i><i></i></div>
-    <div class="cmd"><b>&gt;</b> /told-you-twice</div>
+    <div class="cmd"><b>&gt;</b> /rules-score</div>
     <div class="rows">
-      <div class="row"><span class="n">1</span><span class="r">{{RULE_1}}</span><span class="c"><b>{{SESSIONS_1}} sessions</b> · {{TIMES_1}}×</span></div>
-      <div class="row"><span class="n">2</span><span class="r">{{RULE_2}}</span><span class="c"><b>{{SESSIONS_2}} sessions</b> · {{TIMES_2}}×</span></div>
-      <div class="row"><span class="n">3</span><span class="r">{{RULE_3}}</span><span class="c"><b>{{SESSIONS_3}} sessions</b> · {{TIMES_3}}×</span></div>
-      <div class="row"><span class="n">4</span><span class="r">{{RULE_4}}</span><span class="c"><b>{{SESSIONS_4}} sessions</b> · {{TIMES_4}}×</span></div>
+      <div class="row"><span class="p">Accurate</span><div class="track"><div class="fill" style="width:{{PCT_ACCURATE}}%"></div></div><span class="s">{{ACCURATE}}<i>/40</i></span></div>
+      <div class="row"><span class="p">Essentials</span><div class="track"><div class="fill" style="width:{{PCT_ESSENTIALS}}%"></div></div><span class="s">{{ESSENTIALS}}<i>/25</i></span></div>
+      <div class="row"><span class="p">Specific</span><div class="track"><div class="fill" style="width:{{PCT_SPECIFIC}}%"></div></div><span class="s">{{SPECIFIC}}<i>/15</i></span></div>
+      <div class="row"><span class="p">Lean</span><div class="track"><div class="fill" style="width:{{PCT_LEAN}}%"></div></div><span class="s">{{LEAN}}<i>/10</i></span></div>
+      <div class="row"><span class="p">No noise</span><div class="track"><div class="fill" style="width:{{PCT_NOISE}}%"></div></div><span class="s">{{NOISE}}<i>/10</i></span></div>
     </div>
-    <div class="sum"><b>{{UNWRITTEN}} of {{REPEATS}}</b> were never written in any rules file.</div>
+    <div class="sum"><b>{{FIXES}}</b> {{TAKE}} it to {{AFTER}}/100.</div>
   </div>
 </div>
 <div class="foot mono"><span>deckhand · by Harbor</span><span>github.com/gethrbr/deckhand</span></div>
 </body></html>
+```

@@ -1,7 +1,7 @@
 {
   "name": "deckhand",
   "displayName": "Deckhand",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Free skills that keep your coding agent's rules honest: find what you keep telling it, score and audit CLAUDE.md and AGENTS.md, measure what they cost in context, write them from the code, and check your diff against them.",
   "author": {
     "name": "Harbor",

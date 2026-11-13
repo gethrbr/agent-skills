@@ -32,7 +32,7 @@ Installed it as `agent-skills` before the rename? Run `claude plugin uninstall a
 
 ### Is it safe to install?
 
-A skill runs with your agent's permissions, so read it first. Each skill is a Markdown file in [`skills/`](skills) with no scripts, binaries or install hooks (`told-you-twice` and `rules-score` also carry a `card.html` template for the share image: no scripts in it, and it loads nothing from the network), and every one only reads until you say what to change. `told-you-twice` reads your own session logs and keeps everything on your machine; `rules-from-reviews` reads your PRs through your own signed-in `gh` CLI. Every change to this repo goes through a reviewed pull request, and release tags cannot be moved once published. See [SECURITY.md](SECURITY.md).
+A skill runs with your agent's permissions, so read it first. Each skill is a Markdown file in [`skills/`](skills) with no scripts, binaries or install hooks (`told-you-twice` and `rules-score` also carry a `card.md` holding the HTML template for the share image: no scripts in it, and it loads nothing from the network), and every one only reads until you say what to change. `told-you-twice` reads your own session logs and keeps everything on your machine; `rules-from-reviews` reads your PRs through your own signed-in `gh` CLI. Every change to this repo goes through a reviewed pull request, and release tags cannot be moved once published. See [SECURITY.md](SECURITY.md).
 
 ### Privacy
 
