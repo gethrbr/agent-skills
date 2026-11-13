@@ -138,7 +138,7 @@ Share:
   github.com/gethrbr/deckhand
 ```
 
-Then offer a picture to post with it: `Want it as an image for X or LinkedIn?` On yes, copy `card.html` from this skill's folder to `$T/card.html` and fill it in: the top 3 to 5 repeats by sessions, rule titles only (under 40 characters each), the counts, and how many are not written anywhere (the comment at the top of `card.html` names every `{{...}}`; leave none). Then render it to a PNG next to it, in the same shell command that set `$T` or with the path written out:
+Then offer a picture to post with it: `Want it as an image for X or LinkedIn?` On yes, write the HTML template from `card.md` in this skill's folder to `$T/card.html` (run from the skill's folder: `awk '/^<!doctype html>$/,/<\/html>$/' card.md > "$T/card.html"`) and fill it in: the top 3 to 5 repeats by sessions, rule titles only (under 40 characters each), the counts, and how many are not written anywhere (the comment at the top of the template names every `{{...}}`; leave none). Then render it to a PNG next to it, in the same shell command that set `$T` or with the path written out:
 
 ```sh
 C="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; command -v google-chrome >/dev/null && C=google-chrome
