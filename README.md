@@ -1,12 +1,16 @@
-# Agent skills by Harbor
+# Deckhand
 
-Free skills for coding agents. No account, no API key, nothing is sent to Harbor.
+Free skills that keep your coding agent's rules honest. Works in Claude Code, Codex, Cursor and any agent that reads skills. No account, no API key, nothing is sent to Harbor.
 
-| Skill | What it does |
+| Skill | What you get |
 | :- | :- |
-| [`audit-memory`](#audit-memory) | Checks your `CLAUDE.md`, `AGENTS.md`, Cursor rules and memory files against the code, and finds the lines that went stale |
-| [`check-diff`](#check-diff) | Checks your changes against the repo's own agent rules before you commit |
-| [`rules-from-reviews`](#rules-from-reviews) | Reads your merged PR reviews, finds what reviewers keep asking for, and drafts it as rules your agent will follow |
+| [`told-you-twice`](#told-you-twice) | Everything you keep telling your agent, counted from your own session history, drafted as rules |
+| [`rules-score`](#rules-score) | A score out of 100 for your `CLAUDE.md` / `AGENTS.md`, the lines that cost points, and a README badge |
+| [`context-cost`](#context-cost) | How many tokens your agent reads before you type, and what to cut or move |
+| [`write-rules`](#write-rules) | An `AGENTS.md` written from your CI, configs and git history, with a source for every line |
+| [`audit-memory`](#audit-memory) | Every line in your rules and memory files that the code proves wrong or out of date |
+| [`check-diff`](#check-diff) | Your changes checked against the repo's own rules before you commit |
+| [`rules-from-reviews`](#rules-from-reviews) | What your PR reviewers keep asking for, drafted as rules |
 
 **We ran `audit-memory` on 10 popular open-source repos: 8 had lines that send the agent the wrong way.** [See the results.](results/2026-11-ten-repos.md)
 
@@ -15,18 +19,98 @@ Free skills for coding agents. No account, no API key, nothing is sent to Harbor
 **Any agent** (Claude Code, Cursor, Codex, and others), with the [skills](https://www.npmjs.com/package/skills) CLI:
 
 ```sh
-npx skills add gethrbr/agent-skills
+npx skills add gethrbr/deckhand
 ```
 
 **Claude Code**, as a plugin:
 
 ```sh
-claude plugin marketplace add gethrbr/agent-skills && claude plugin install agent-skills@gethrbr
+claude plugin marketplace add gethrbr/deckhand && claude plugin install deckhand@gethrbr
 ```
+
+Installed it as `agent-skills` before the rename? Run `claude plugin uninstall agent-skills@gethrbr`, then the line above.
 
 ### Is it safe to install?
 
-A skill runs with your agent's permissions, so read it first. Each skill is one Markdown file ([audit-memory](skills/audit-memory/SKILL.md), [check-diff](skills/check-diff/SKILL.md), [rules-from-reviews](skills/rules-from-reviews/SKILL.md)) with no scripts, binaries or install hooks, and all three only read: they never edit a file until you say so. `rules-from-reviews` reads your PRs through your own signed-in `gh` CLI; nothing goes anywhere else. Every change to this repo goes through a reviewed pull request, and release tags cannot be moved once published. See [SECURITY.md](SECURITY.md).
+A skill runs with your agent's permissions, so read it first. Each skill is one Markdown file in [`skills/`](skills) with no scripts, binaries or install hooks, and every one only reads until you say what to change. `told-you-twice` reads your own session logs and keeps everything on your machine; `rules-from-reviews` reads your PRs through your own signed-in `gh` CLI. Every change to this repo goes through a reviewed pull request, and release tags cannot be moved once published. See [SECURITY.md](SECURITY.md).
+
+## told-you-twice
+
+Every correction you type twice is a rule nobody wrote down.
+
+`told-you-twice` reads your past Claude Code and Codex sessions on this machine (only the messages you typed), finds what you corrected in two or more sessions, and counts it. Then it checks your rules files: is it written nowhere, written but still ignored, or contradicted by another line?
+
+```
+1. Use pnpm, never npm or yarn                          23 times in 9 sessions
+     "no, pnpm not npm"                     Nov 3
+     "i told you, pnpm"                     Nov 9
+     written: nowhere
+     add to:  AGENTS.md
+
+2. Run the type check before you say it's done          11 times in 7 sessions
+     "did you even run tsc?"                Nov 5
+     written: CLAUDE.md:12 "Verify your changes", still repeated after it
+     fix:     name the command: "Run `pnpm typecheck` before saying done"
+```
+
+The most useful finding is usually the second kind: a rule that is already written and the agent still misses, because the line is too vague. Your logs never leave your machine, and the summary at the end has counts and rule titles only, so you can post it.
+
+Use it: ask your agent *what do I keep telling you?*, or in Claude Code run `/deckhand:told-you-twice`. Add *all my projects* to read every repo.
+
+## rules-score
+
+One number for how much your agent can trust its rules, on a fixed rubric: **accurate** (40: paths, commands and tools that exist), **essentials** (25: setup, build, test, one test, lint, layout), **specific** (15), **lean** (10: tokens loaded every session) and **no noise** (10: nothing a linter already enforces, no repeats).
+
+```
+Agent rules score: 90/100 (A)
+
+  Accurate     40/40   every path, command and script checked, none wrong
+  Essentials   15/25   no install line, no build/run line
+  Specific     15/15   18 of 18 lines name something concrete
+  Lean         10/10   ~880 tokens loaded every session
+  No noise     10/10   nothing restates the formatter config, no repeats
+```
+
+That's [trpc/trpc](https://github.com/trpc/trpc), from a real run. Every lost point comes with its `file:line`, proof and fix, and you get a badge for your README:
+
+[![agent rules: 90/100](https://img.shields.io/badge/agent%20rules-90%2F100-brightgreen)](https://github.com/gethrbr/deckhand)
+
+Use it: ask your agent to *score our agent rules*, or in Claude Code run `/deckhand:rules-score`.
+
+## context-cost
+
+Your agent reads your rules, imports, memory index, skill descriptions and MCP tools at the start of every session, before you type a word. `context-cost` measures each one and finds what to cut or move:
+
+```
+File                         Loads       Tokens
+~/.claude/CLAUDE.md          always       3,900
+CLAUDE.md                    always       2,800
+docs/conventions.md (@)      always       2,100
+skills (31, front matter)    always       1,100
+packages/api/CLAUDE.md       on demand      900
+
+-1,600  docs/conventions.md, lines 40-180    one folder only
+        the whole "Mobile app" section is about apps/mobile
+        move:  apps/mobile/CLAUDE.md (loads only there)
+```
+
+It also catches the silent ones: Codex stops reading `AGENTS.md` after 32 KiB, and Claude Code skips `AGENTS.md` entirely when a `CLAUDE.md` exists that does not import it.
+
+Use it: ask your agent *how many tokens do you read before I type?*, or in Claude Code run `/deckhand:context-cost`.
+
+## write-rules
+
+No `AGENTS.md` yet? `write-rules` writes one from what the repo actually does: CI first (that's what "done" means), then scripts, tool configs, folder layout and the last 300 commits. Every line shows its source before anything is written, and it leaves out what your linter already enforces.
+
+```
+- Run in this order, as CI does: `pnpm run check`, `pnpm run editorconfig-checker`, `pnpm run build`, `pnpm run test`   [.github/workflows/ci.yml:58-61]
+- Tests sit next to the source as `*.test.ts` (125 files in src/)                        [git ls-files src]
+- Don't bump adapter versions when releasing hono; adapters are tagged `@hono/<name>@<version>`   [docs/MAINTAINING.md]
+```
+
+That's from a real run on [honojs/hono](https://github.com/honojs/hono), which has no rules file.
+
+Use it: ask your agent to *write an AGENTS.md for this repo*, or in Claude Code run `/deckhand:write-rules`.
 
 ## audit-memory
 
@@ -51,7 +135,7 @@ AGENTS.md:8  Wrong
   fix:    `npm run test:e2e -w <the app-tests package>`
 ```
 
-Use it: ask your agent to *audit my agent memory files*, or in Claude Code run `/agent-skills:audit-memory`. On a big repo it takes a few minutes.
+Use it: ask your agent to *audit my agent memory files*, or in Claude Code run `/deckhand:audit-memory`. On a big repo it takes a few minutes.
 
 ## check-diff
 
@@ -66,7 +150,7 @@ web/src/features/ai-features/server/availability.ts:1
 
 It also catches required steps the diff is missing, like a changeset or a migration. A clean diff gets one line saying which rules it was checked against.
 
-Use it: ask your agent to *check my diff against the repo rules* before you commit, or in Claude Code run `/agent-skills:check-diff`.
+Use it: ask your agent to *check my diff against the repo rules* before you commit, or in Claude Code run `/deckhand:check-diff`.
 
 ## rules-from-reviews
 
@@ -89,11 +173,11 @@ Comments describe the code as it is now. No "fossil" comments that compare old a
 
 That one is from a real run on [payloadcms/payload](https://github.com/payloadcms/payload). Needs the [GitHub CLI](https://cli.github.com) signed in.
 
-Use it: ask your agent *what do my reviewers keep asking for?*, or in Claude Code run `/agent-skills:rules-from-reviews`.
+Use it: ask your agent *what do my reviewers keep asking for?*, or in Claude Code run `/deckhand:rules-from-reviews`.
 
 ## Keeping the rules current, not just audited
 
-These skills run once, when you ask. [Harbor](https://gethrbr.com) keeps the rules current all the time: it collects the rules your team settles in PR reviews, Slack and agent sessions, a person approves them, and every agent (Claude Code, Cursor, Codex) gets the ones that apply to the files it is touching. With Harbor connected, `audit-memory` also checks your files against those approved rules.
+These skills run when you ask. [Harbor](https://gethrbr.com) keeps the rules current all the time: it collects the rules your team settles in PR reviews, Slack and agent sessions, a person approves them, and every agent (Claude Code, Cursor, Codex) gets the ones that apply to the files it is touching. With Harbor connected, `audit-memory` also checks your files against those approved rules.
 
 ## License
 
