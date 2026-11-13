@@ -77,7 +77,7 @@ That's [trpc/trpc](https://github.com/trpc/trpc), from a real run. Every lost po
 
 [![agent rules: 90/100](https://img.shields.io/badge/agent%20rules-90%2F100-brightgreen)](https://github.com/gethrbr/deckhand)
 
-It also offers the score as a 1080x1080 image to post.
+It also offers the score as a 1080x1080 image to post. See how 20 popular repos scored: [agent rules leaderboard](docs/leaderboard-2026-11.md).
 
 Use it: ask your agent to *score our agent rules*, or in Claude Code run `/deckhand:rules-score`.
 
