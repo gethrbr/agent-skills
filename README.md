@@ -34,6 +34,17 @@ Installed it as `agent-skills` before the rename? Run `claude plugin uninstall a
 
 A skill runs with your agent's permissions, so read it first. Each skill is a Markdown file in [`skills/`](skills) with no scripts, binaries or install hooks (`told-you-twice` and `rules-score` also carry a `card.html` template for the share image: no scripts in it, and it loads nothing from the network), and every one only reads until you say what to change. `told-you-twice` reads your own session logs and keeps everything on your machine; `rules-from-reviews` reads your PRs through your own signed-in `gh` CLI. Every change to this repo goes through a reviewed pull request, and release tags cannot be moved once published. See [SECURITY.md](SECURITY.md).
 
+### Privacy
+
+Deckhand collects nothing. It has no server, no analytics and no telemetry, and it never sends your files, session logs, quotes or paths anywhere. Everything a skill reads stays on your machine and in your agent's conversation:
+
+- `told-you-twice` reads your own Claude Code and Codex session logs (`~/.claude/projects`, `~/.codex/sessions`) and your rules files.
+- `context-cost` reads your agent's config (`~/.claude.json`, `~/.claude/settings.json`, `~/.codex/config.toml`) only to count what it loads.
+- `rules-from-reviews` reads merged pull request reviews from GitHub through your own signed-in `gh` CLI.
+- The rest read the repo you run them in.
+
+One exception you turn on yourself: if you have connected Harbor's MCP server, `told-you-twice` and `audit-memory` send it short rule sentences (never your logs or files) to check them against your team's rules, and `told-you-twice` saves a rule to Harbor only after you say so. Without Harbor connected, nothing leaves your machine.
+
 ## told-you-twice
 
 Every correction you type twice is a rule nobody wrote down.
