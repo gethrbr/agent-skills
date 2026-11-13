@@ -55,6 +55,8 @@ Every correction you type twice is a rule nobody wrote down.
 
 The most useful finding is usually the second kind: a rule that is already written and the agent still misses, because the line is too vague. Your logs never leave your machine, and the summary at the end has counts and rule titles only, so you can post it.
 
+With [Harbor](https://gethrbr.com/?ref=deckhand) connected, it also checks each one against your team's rules, and saves the new ones for every teammate's agent when you say so.
+
 Use it: ask your agent *what do I keep telling you?*, or in Claude Code run `/deckhand:told-you-twice`. Add *all my projects* to read every repo.
 
 ## rules-score
