@@ -17,6 +17,8 @@ Sort them into two groups, because the rubric treats them differently:
 
 A folder reached through two symlinks (say `.claude/rules` and `.cursor/rules` both pointing at `agents/rules`) is one set of files. Count each real file once.
 
+Score the repo's files only. The user's own files (`~/.claude/CLAUDE.md`, the memory folder) load too, but they are personal, not the repo's rules: the `context-cost` skill measures those.
+
 If none exist, the score is **0/100**: say so, and suggest the `write-rules` skill to write a first one from the code. Stop.
 
 ## 2. Score on the rubric
@@ -31,7 +33,7 @@ grep -HnoE '`[A-Za-z0-9_.@/-]+/[A-Za-z0-9_.@/*-]*`' <every rules file> | tr -d '
 
 Then look at each hit: drop placeholders and examples (`path/to/file.ts`, `src/foo/`), paths relative to a folder the line names, and paths a build generates. Package names (`@scope/pkg`) are skipped by the command: check those against the workspace's `package.json` names instead. What remains is wrong. Then check commands, scripts, tools and versions by reading `package.json` and other manifests, lockfiles and configs. Reading commands only. Start at 40, then:
 
-- minus 8 for each **wrong** claim (names a path, script or package that does not exist)
+- minus 8 for each **wrong** claim (names a path, script, package, branch or env var that does not exist)
 - minus 5 for each **conflict** (two lines, in one file or two, say opposite things)
 - minus 4 for each **out of date** claim (the repo moved to another tool, version or layout)
 - minus 5 once if the repo has both `AGENTS.md` and a `CLAUDE.md` that does not import it (`@AGENTS.md`): Claude Code then never reads `AGENTS.md`. With `AGENTS.md` alone there is no deduction: Claude Code reads it when no `CLAUDE.md` exists, and so do Codex and Cursor
@@ -78,7 +80,7 @@ Agent rules score: 74/100 (C)
   No noise      3/10   3 lines restate .prettierrc, 1 duplicate
 ```
 
-Then the fixes, biggest gain first. A fix's gain is what the total actually rises by after the floors (a part already at 0 rises only to its cap), so the gains add up to the score after all fixes. Count a gain only where it is exact (a wrong line fixed, an essential added, the bytes after a move); for Specific and No noise, list the fix but leave its gain out of the total rather than guess. Each with proof and a fix:
+Then the fixes, biggest gain first. A fix's gain is what the total actually rises by after the floors (a part already at 0 rises only to its cap), so the gains add up to the score after all fixes. Count a gain only where it is exact (a wrong line fixed, an essential added, the bytes after a move); for Specific and No noise, list the fix last, without a gain, rather than guess. Each with proof and a fix:
 
 ```
 +8  CLAUDE.md:14  wrong

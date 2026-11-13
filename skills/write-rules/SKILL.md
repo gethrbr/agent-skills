@@ -22,7 +22,7 @@ Read in this order. When two sources disagree, the higher one wins (what CI and 
 3. **Tool configs**: the linter, formatter, type checker and test runner, and how to run one test file with that runner.
 4. **Layout**: `git ls-files | cut -d/ -f1 | sort | uniq -c | sort -rn` for the top folders, then the same with `-f1-2` inside the big ones, for what lives where.
 5. **Contributor docs**: `README`, `CONTRIBUTING`, the PR template, `docs/`.
-6. **Git history** for habits the configs do not show: `git log --oneline -300` for commit message style and scopes; files that change together (a schema and its migration, a component and its story); repeated reverts or `fix:` commits on one area (a gotcha).
+6. **Git history** for habits the configs do not show, on the default branch (`git log --oneline -300 origin/HEAD`, or `main`/`master`); with fewer than about 50 commits, call nothing a habit from history alone. Read files as they are on disk, and say so if the tree has uncommitted changes. Look at commit message style and scopes; files that change together (a schema and its migration, a component and its story); repeated reverts or `fix:` commits on one area (a gotcha).
 7. **Code habits**, only with strong evidence: an import alias used across the codebase, where tests live and how they are named, one logger or HTTP client used everywhere. Count the hits with `grep`; a habit needs most files in its area to follow it.
 
 ## 3. Draft
@@ -36,7 +36,7 @@ Keep it under 80 lines, headings included. Use these sections, and skip any with
 - **Before you finish**: what CI checks that an agent should run first, and the steps that ride along with a change (a changeset, a migration, regenerated files, updated snapshots)
 - **Gotchas**: the traps git history shows
 
-Leave out what a formatter or linter already enforces, what any agent already knows, and anything you could not prove. A short true file beats a long guessed one.
+Keep the rules a test or CI step enforces (an agent that breaks one only finds out from a red build), but leave out what a formatter or linter already fixes or flags as you type, what any agent already knows, and anything you could not prove. A short true file beats a long guessed one.
 
 ## 4. Show the draft with its sources
 
