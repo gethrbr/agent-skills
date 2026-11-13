@@ -32,7 +32,7 @@ Installed it as `agent-skills` before the rename? Run `claude plugin uninstall a
 
 ### Is it safe to install?
 
-A skill runs with your agent's permissions, so read it first. Each skill is one Markdown file in [`skills/`](skills) with no scripts, binaries or install hooks, and every one only reads until you say what to change. `told-you-twice` reads your own session logs and keeps everything on your machine; `rules-from-reviews` reads your PRs through your own signed-in `gh` CLI. Every change to this repo goes through a reviewed pull request, and release tags cannot be moved once published. See [SECURITY.md](SECURITY.md).
+A skill runs with your agent's permissions, so read it first. Each skill is a Markdown file in [`skills/`](skills) with no scripts, binaries or install hooks (`told-you-twice` and `rules-score` also carry a `card.html` template for the share image: no scripts in it, and it loads nothing from the network), and every one only reads until you say what to change. `told-you-twice` reads your own session logs and keeps everything on your machine; `rules-from-reviews` reads your PRs through your own signed-in `gh` CLI. Every change to this repo goes through a reviewed pull request, and release tags cannot be moved once published. See [SECURITY.md](SECURITY.md).
 
 ## told-you-twice
 
@@ -53,7 +53,7 @@ Every correction you type twice is a rule nobody wrote down.
      fix:     name the command: "Run `pnpm typecheck` before saying done"
 ```
 
-The most useful finding is usually the second kind: a rule that is already written and the agent still misses, because the line is too vague. Your logs never leave your machine, and the summary at the end has counts and rule titles only, so you can post it.
+The most useful finding is usually the second kind: a rule that is already written and the agent still misses, because the line is too vague. Your logs never leave your machine, and the summary at the end has counts and rule titles only, so you can post it. Say yes when it offers an image, and you get a 1080x1080 card for X or LinkedIn.
 
 With [Harbor](https://gethrbr.com/?ref=deckhand) connected, it also checks each one against your team's rules, and saves the new ones for every teammate's agent when you say so.
 
@@ -76,6 +76,8 @@ Agent rules score: 90/100 (A)
 That's [trpc/trpc](https://github.com/trpc/trpc), from a real run. Every lost point comes with its `file:line`, proof and fix, and you get a badge for your README:
 
 [![agent rules: 90/100](https://img.shields.io/badge/agent%20rules-90%2F100-brightgreen)](https://github.com/gethrbr/deckhand)
+
+It also offers the score as a 1080x1080 image to post.
 
 Use it: ask your agent to *score our agent rules*, or in Claude Code run `/deckhand:rules-score`.
 

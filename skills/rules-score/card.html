@@ -1,0 +1,50 @@
+<!doctype html>
+<!-- rules-score share card, 1080x1080. Fill every {{...}}: each part's points, its max, and PCT_x = points / max * 100 (bar width).
+     FIXES is "1 fix" or "3 fixes", TAKE is "takes" or "take" to match, AFTER the score after them. If no fix raises the score, delete the .sum line. No scripts, no web fonts: nothing here loads from the network. -->
+<html><head><meta charset="utf-8"><title>rules-score</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1080px;height:1080px;overflow:hidden}
+  body{position:relative;background:#F6F7F7;color:#101C20;-webkit-font-smoothing:antialiased;
+    font-family:"Instrument Sans",-apple-system,"Segoe UI",system-ui,sans-serif}
+  .mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .guide{position:absolute;top:0;bottom:0;width:1px;background:rgba(16,28,32,.08)}
+  .chip{position:absolute;left:72px;top:60px;font-size:15px;letter-spacing:.12em;color:#55504A;padding:8px 13px;
+    border:1px solid rgba(16,28,32,.14);background:#fff;text-transform:uppercase}
+  h1{position:absolute;left:72px;right:72px;top:112px;font-size:56px;font-weight:600;line-height:1.04;letter-spacing:-.045em}
+  h1 .soft{color:#5E6B6E}
+  .panel{position:absolute;left:72px;right:72px;top:262px;bottom:116px;border-radius:12px;overflow:hidden;
+    background:#38C8B0 url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAaCAIAAABKLomcAAACWElEQVR42mWVsYqWQQxF80a2voWP4pv4GIKdtY3dYqmdIILVlmJjb5azHA9ZGIaZfDfJzU3m/+fdr28///758Phj1x4efj9y4Mw6gHXRvovrwddl98VwNciA4wNu4DRiN6X+fsJOgqYvacKys0bWZtrdq8mM3oXx7fcHXPagHnUhgoeF7fm5Yi4Sx4cF1Aq4lpnuJUQBVmxudZpytFac28Iju7H09Ss75AQQWd7/e2wmrDZvr2cpGqHlpFRaBFRLCQ3hztS1bZyNYmgnDi/70tKl0hGmzmnQ4jTaYIOe8TEreoh3KhvKMsZviqykb75+Mp+qtBSp6OLOweDsJT1ytGFHpcbCsoR6lffaLd3DGsH3Z2QP471v3OlYn7bwhHMIBIOHXOdL/WQw0lEoHarY+dmT4lH4JVh5IOqnaSZV4rPp20hfZCVlkYO9QUxcnaaKqU97Y+daCmmOka63qR14MKR4krrtPEWc0Fpsc1P2XZm7Civ7c8Utrq3tr0rpY3/95eO67E44oh8xIQFGigDWOJbbWonb81HiyND0nXO8SshuzsYFwUEZa5d49VR5MC6uR4Yzg7vGcluWL/JMRH+92x0/KZWVrCOkD3goiCh2TnF6PcpbqBgsjoLGEw37HD1VWIJqWE/7cjrSCW0BVQLAUO6rz+/Ph5Ldr3sG00DuAF7+mbbNi4Ex4IHaXrj3vdv4puwD9ZnWnWjs5zWLeZJa3UCbBpxN5Xxq7ZM1gvUVZnkWPaUvR91e1oRFDXx7ANS2g9K50WtsoZS5qsRLTu2OU3MaWQGOoozhP8lX2b+BpKOJAAAAAElFTkSuQmCC") 0 0/100% 100%;image-rendering:pixelated}
+  .term{position:absolute;left:36px;right:36px;top:36px;bottom:36px;border-radius:10px;background:#101C20;color:#D3CEC8;
+    box-shadow:0 30px 60px -24px rgba(5,40,35,.55),0 0 0 1px rgba(255,255,255,.06);image-rendering:auto;
+    display:flex;flex-direction:column}
+  .bar{height:40px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .bar i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.18)}
+  .cmd{padding:26px 36px 0;font-size:22px;color:#8C857D}.cmd b{color:#6FD8C6}.rows{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;padding:10px 36px 0}.sum{margin:0 36px 30px;padding-top:22px;border-top:1px solid rgba(255,255,255,.09);font-size:22px;color:#8C857D}.sum b{color:#6FD8C6}
+  .row{display:grid;grid-template-columns:200px 1fr 130px;gap:18px;align-items:baseline;font-size:27px;line-height:1.25}
+  .row .n{color:#6FD8C6;font-weight:700}
+  .row .r{color:#fff;font-family:"Instrument Sans",-apple-system,"Segoe UI",system-ui,sans-serif;font-weight:600;font-size:28px;letter-spacing:-.01em}
+  .row .c{color:#8C857D;font-size:21px;white-space:nowrap;text-align:right}
+  .row .c b{color:#FF8A5C;font-size:25px}
+  .foot{position:absolute;left:72px;right:72px;bottom:50px;display:flex;justify-content:space-between;font-size:17px;color:#5E6B6E;letter-spacing:.02em}
+  .row .p{color:#fff;font-weight:600}.track{height:14px;border-radius:7px;background:rgba(255,255,255,.08);align-self:center}.fill{height:100%;border-radius:7px;background:#6FD8C6}.row .s{color:#fff;text-align:right;font-size:25px}.row .s i{color:#8C857D;font-style:normal}
+</style></head><body>
+<div class="guide" style="left:48px"></div><div class="guide" style="right:48px"></div>
+<div class="chip mono">rules-score, on our agent rules</div>
+<h1><span class="soft">Our agent rules scored</span><br>{{SCORE}}/100 ({{GRADE}}).</h1>
+<div class="panel">
+  <div class="term mono">
+    <div class="bar"><i></i><i></i><i></i></div>
+    <div class="cmd"><b>&gt;</b> /rules-score</div>
+    <div class="rows">
+      <div class="row"><span class="p">Accurate</span><div class="track"><div class="fill" style="width:{{PCT_ACCURATE}}%"></div></div><span class="s">{{ACCURATE}}<i>/40</i></span></div>
+      <div class="row"><span class="p">Essentials</span><div class="track"><div class="fill" style="width:{{PCT_ESSENTIALS}}%"></div></div><span class="s">{{ESSENTIALS}}<i>/25</i></span></div>
+      <div class="row"><span class="p">Specific</span><div class="track"><div class="fill" style="width:{{PCT_SPECIFIC}}%"></div></div><span class="s">{{SPECIFIC}}<i>/15</i></span></div>
+      <div class="row"><span class="p">Lean</span><div class="track"><div class="fill" style="width:{{PCT_LEAN}}%"></div></div><span class="s">{{LEAN}}<i>/10</i></span></div>
+      <div class="row"><span class="p">No noise</span><div class="track"><div class="fill" style="width:{{PCT_NOISE}}%"></div></div><span class="s">{{NOISE}}<i>/10</i></span></div>
+    </div>
+    <div class="sum"><b>{{FIXES}}</b> {{TAKE}} it to {{AFTER}}/100.</div>
+  </div>
+</div>
+<div class="foot mono"><span>deckhand · by Harbor</span><span>github.com/gethrbr/deckhand</span></div>
+</body></html>
