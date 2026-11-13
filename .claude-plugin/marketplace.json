@@ -7,9 +7,9 @@
   },
   "plugins": [
     {
-      "name": "agent-skills",
+      "name": "deckhand",
       "source": "./",
-      "description": "Free skills for coding agents: audit CLAUDE.md, AGENTS.md and Cursor rules against the code, and check your diff against them."
+      "description": "Free skills that keep your coding agent's rules honest: find what you keep telling it, score and audit CLAUDE.md and AGENTS.md, measure their context cost, write them from the code."
     }
   ]
 }

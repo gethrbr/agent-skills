@@ -5,7 +5,9 @@ These skills run inside your coding agent with its permissions, so we treat ever
 - Every change to `main` goes through a pull request reviewed by a code owner. Force pushes and branch deletion are blocked.
 - Releases are git tags (`v0.1.0`, ...). A tag cannot be moved or deleted once it is published.
 - The skills are Markdown only: no scripts, no binaries, no install hooks, no network calls of their own.
-- `audit-memory` only reads. It tells the agent never to run the project's own scripts and never to edit a file until you say which lines.
+- Every skill only reads until you say what to change. They tell the agent never to run the project's own scripts, never to commit, and never to edit a file you did not pick.
+- `told-you-twice` reads your own Claude Code and Codex session logs in your home folder. It copies only the messages you typed into a temp folder, keeps them on your machine, never prints anything that looks like a secret, and its share line holds counts and rule titles only.
+- `rules-from-reviews` is the only skill that reaches the network, through your own signed-in `gh` CLI, to read your repo's PR reviews.
 
 ## Reporting a vulnerability
 
